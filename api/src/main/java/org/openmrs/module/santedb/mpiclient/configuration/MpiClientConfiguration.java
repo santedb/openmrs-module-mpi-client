@@ -87,6 +87,7 @@ public class MpiClientConfiguration {
 	
 	public static final String PROP_HTTP_PROXY = "mpi-client.http.proxyAddress";
 	public static final String PROP_AUTH_TYPE = "mpi-client.security.authType";
+	public static final String PROP_HL7_TLS = "mpi-client.security.tls";
 	
     private Map<String, Object> m_cachedProperties = new HashMap<String, Object>();
 
@@ -302,6 +303,14 @@ public class MpiClientConfiguration {
      */
     public Integer getPixPort() {
     	return this.getOrCreateGlobalProperty(PROP_NAME_PIX_EP_PORT, 2100);
+    }
+    
+    /**
+     * Get whether messages should use TLS
+     * @return 
+     */
+    public Boolean getUseTls() {
+    	return this.getOrCreateGlobalProperty(PROP_HL7_TLS, false);
     }
     
     /**

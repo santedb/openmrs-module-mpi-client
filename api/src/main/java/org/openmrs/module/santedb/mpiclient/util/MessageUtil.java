@@ -136,7 +136,7 @@ public final class MessageUtil {
 			if (log.isInfoEnabled())
 				log.info(String.format("Sending to %s:%s : %s", endpoint, port, parser.encode(request)));
 
-			connection = hub.attach(endpoint, port, parser, MinLowerLayerProtocol.class);
+			connection = hub.attach(endpoint, port, parser, MinLowerLayerProtocol.class, this.m_configuration.getUseTls());
 
 			Initiator initiator = connection.getInitiator();
 			initiator.setTimeoutMillis(20000);
