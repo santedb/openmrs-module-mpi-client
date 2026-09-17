@@ -140,8 +140,8 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<target>1.6</target>
-						<source>1.6</source>
+						<target>1.8</target>
+						<source>1.8</source>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -172,14 +172,9 @@
 			<url>http://mavenrepo.openmrs.org/nexus/content/repositories/public</url>
 		</repository>
 		<repository>
-			<id>marc-te</id>
-			<name>TECH EXCHANGE</name>
-			<url>http://te.marc-hi.ca/mvn</url>
-		</repository>
-		<repository>
-			<id>santesute-main</id>
-			<url>http://santesuite.org/mvn</url>
-			<name>SanteSuite</name>
+			<id>oscar</id>
+			<name>OSCAR McMaster</name>
+			<url>https://oscarmcmaster.sourceforge.net/m2/</url>
 		</repository>
 	</repositories>
 

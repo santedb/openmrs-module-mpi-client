@@ -87,6 +87,7 @@ public class MpiClientConfiguration {
 	
 	public static final String PROP_HTTP_PROXY = "mpi-client.http.proxyAddress";
 	public static final String PROP_AUTH_TYPE = "mpi-client.security.authType";
+	public static final String PROP_HL7_TLS = "mpi-client.security.tls";
 	
     private Map<String, Object> m_cachedProperties = new HashMap<String, Object>();
 
@@ -195,6 +196,14 @@ public class MpiClientConfiguration {
 		return this.getOrCreateGlobalProperty(PROP_NAME_IDP_ENDPOINT, "");
 	}
 	
+	/**
+     * Get whether messages should use TLS
+     * @return 
+     */
+    public Boolean getUseTls() {
+    	return this.getOrCreateGlobalProperty(PROP_HL7_TLS, false);
+    }
+    
 	/**
 	 * Gets whether background threads are to be used
 	 * @return

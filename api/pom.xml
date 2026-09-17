@@ -50,10 +50,12 @@
 			<type>pom</type>
 		</dependency>
 
+<!-- Source: https://mvnrepository.com/artifact/org.marc.everest/everest-core -->
 		<dependency>
-			<groupId>org.marc.everest</groupId>
-			<artifactId>everest-core</artifactId>
-			<version>1.1.0</version>
+		    <groupId>org.marc.everest</groupId>
+		    <artifactId>everest-core</artifactId>
+		    <version>1.1.0</version>
+		    <scope>compile</scope>
 		</dependency>
 		<!-- DCM4CHE Modules -->
 		<dependency>
