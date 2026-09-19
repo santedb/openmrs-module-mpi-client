@@ -56,6 +56,9 @@ public class MpiClientConfiguration {
 	public static final String PROP_NAME_AUTO_PIT = "mpi-client.pid.updateIdTypes";
 
 	public static final String PROP_NAME_MSH_8 = "mpi-client.security.authtoken";
+	public static final String PROP_NAME_SND_DEV = "mpi-client.msg.deviceId";
+	public static final String PROP_NAME_DEVICE_TOKEN = "mpi-client.msg.deviceToken";
+	
 	public static final String PROP_NAME_IDP_ENDPOINT = "mpi-client.security.idp.addr";
 
 	public static final String PROP_NAME_JKSTRUST_STORE = "mpi-client.security.trustStore";
@@ -147,6 +150,22 @@ public class MpiClientConfiguration {
 					s_instance = new MpiClientConfiguration();
 			}
 		return s_instance;
+	}
+	
+	/** 
+	 * Get the sending device identifier
+	 * @return
+	 */
+	public String getDeviceId() {
+		return this.getOrCreateGlobalProperty(PROP_NAME_SND_DEV, null);		
+	}
+	
+	/** 
+	 * Get the sending device token
+	 * @return
+	 */
+	public String getDeviceSecret() {
+		return this.getOrCreateGlobalProperty(PROP_NAME_DEVICE_TOKEN, null);
 	}
 	
 	/**
@@ -390,7 +409,7 @@ public class MpiClientConfiguration {
     	if(!propertyData.isEmpty()) {
     		for(String kv : propertyData.split(","))
     		{
-    			String[] key = kv.split(":");
+    			String[] key = kv.split(":=");
     			retVal.put(key[0], key[1]);
     		}
     	}

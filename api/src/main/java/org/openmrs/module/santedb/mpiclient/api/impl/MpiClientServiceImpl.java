@@ -39,6 +39,8 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 		implements MpiClientService {
 
 	private FhirMpiClientServiceImpl m_fhirService;
+	private PmirMpiClientServiceImpl m_pmirService;
+	
 	private HL7MpiClientServiceImpl m_hl7Service;
 	// Get health information exchange information
 	private MpiClientConfiguration m_configuration = MpiClientConfiguration.getInstance();
@@ -60,6 +62,7 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	public MpiClientServiceImpl() {
 		this.m_fhirService = new FhirMpiClientServiceImpl(); // TODO: FHIR implementation
 		this.m_hl7Service = new HL7MpiClientServiceImpl();
+		this.m_pmirService = new PmirMpiClientServiceImpl();
 	}
 
 	/**
@@ -69,7 +72,9 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	public List<MpiPatient> searchPatient(String familyName, String givenName, Date dateOfBirth, boolean fuzzyDate,
 			String gender, String stateOrRegion, String cityOrTownship, PatientIdentifier patientIdentifier,
 			PatientIdentifier mothersIdentifier, String nextOfKinName, String birthPlace) throws MpiClientException {
-		if(MpiClientConfiguration.getInstance().getMessageFormat().equals("fhir"))
+		if("pmir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
+			return this.m_pmirService.searchPatient(familyName, givenName, dateOfBirth, fuzzyDate, gender, stateOrRegion, cityOrTownship, patientIdentifier, mothersIdentifier, nextOfKinName, birthPlace);
+		else if("fhir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
 			return this.m_fhirService.searchPatient(familyName, givenName, dateOfBirth, fuzzyDate, gender, stateOrRegion, cityOrTownship, patientIdentifier, mothersIdentifier, nextOfKinName, birthPlace);
 		else 
 			return this.m_hl7Service.searchPatient(familyName, givenName, dateOfBirth, fuzzyDate, gender, stateOrRegion, cityOrTownship, patientIdentifier, mothersIdentifier, nextOfKinName, birthPlace);
@@ -82,7 +87,9 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	@Override
 	public MpiPatient getPatient(String identifier, String assigningAuthority) throws MpiClientException {
 		// TODO Auto-generated method stub
-		if(MpiClientConfiguration.getInstance().getMessageFormat().equals("fhir"))
+		if("pmir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
+			return this.m_pmirService.getPatient(identifier, assigningAuthority);
+		else if("fhir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
 			return this.m_fhirService.getPatient(identifier, assigningAuthority);
 		else 
 			return this.m_hl7Service.getPatient(identifier, assigningAuthority);
@@ -95,7 +102,9 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	public PatientIdentifier resolvePatientIdentifier(Patient patient, String toAssigningAuthority)
 			throws MpiClientException {
 		// TODO Auto-generated method stub
-		if(MpiClientConfiguration.getInstance().getMessageFormat().equals("fhir"))
+		if("pmir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
+			return this.m_pmirService.resolvePatientIdentifier(patient, toAssigningAuthority);
+		else if("fhir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
 			return this.m_fhirService.resolvePatientIdentifier(patient, toAssigningAuthority);
 		else 
 			return this.m_hl7Service.resolvePatientIdentifier(patient, toAssigningAuthority);
@@ -134,7 +143,9 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	@Override
 	public Patient importPatient(MpiPatient patient) throws MpiClientException {
 		// TODO Auto-generated method stub
-		if(MpiClientConfiguration.getInstance().getMessageFormat().equals("fhir"))
+		if("pmir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
+			return this.m_pmirService.importPatient(patient);
+		else if("fhir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
 			return this.m_fhirService.importPatient(patient);
 		else 
 			return this.m_hl7Service.importPatient(patient);
@@ -180,7 +191,9 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	@Override
 	public void exportPatient(Patient patient) throws MpiClientException {
 		// TODO Auto-generated method stub
-		if(MpiClientConfiguration.getInstance().getMessageFormat().equals("fhir"))
+		if("pmir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
+			this.m_pmirService.exportPatient(patient);
+		else if("fhir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
 			this.m_fhirService.exportPatient(patient);
 		else 
 			this.m_hl7Service.exportPatient(patient);
@@ -192,7 +205,9 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	@Override
 	public void updatePatient(Patient patient) throws MpiClientException {
 		// TODO Auto-generated method stub
-		if(MpiClientConfiguration.getInstance().getMessageFormat().equals("fhir"))
+		if("pmir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
+			this.m_pmirService.updatePatient(patient);
+		else if(MpiClientConfiguration.getInstance().getMessageFormat().equals("fhir"))
 			this.m_fhirService.updatePatient(patient);
 		else 
 			this.m_hl7Service.updatePatient(patient);
@@ -204,7 +219,9 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	@Override
 	public AuditLogger getAuditLogger() {
 		// TODO Auto-generated method stub
-		if(MpiClientConfiguration.getInstance().getMessageFormat().equals("fhir"))
+		if("pmir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
+			return this.m_fhirService.getAuditLogger();
+		else if("fhir".equals(MpiClientConfiguration.getInstance().getMessageFormat()))
 			return this.m_fhirService.getAuditLogger();
 		else 
 			return this.m_hl7Service.getAuditLogger();

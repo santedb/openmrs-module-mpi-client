@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -29,12 +30,20 @@ import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.ContactPoint.ContactPointUse;
 import org.hl7.fhir.r4.model.DateType;
 import org.hl7.fhir.r4.model.HumanName;
 import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.Meta;
+import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.codesystems.ContactPointSystem;
 import org.hl7.fhir.r4.model.Address.AddressUse;
 import org.hl7.fhir.r4.model.Enumerations.AdministrativeGender;
+import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.HumanName.NameUse;
+import org.hl7.fhir.r4.model.IdType;
+import org.marc.everest.datatypes.II;
 import org.marc.everest.datatypes.TS;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
@@ -46,6 +55,7 @@ import org.openmrs.PersonAttributeType;
 import org.openmrs.PersonName;
 import org.openmrs.Relationship;
 import org.openmrs.RelationshipType;
+import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.santedb.mpiclient.configuration.MpiClientConfiguration;
 import org.openmrs.module.santedb.mpiclient.model.MpiPatient;
@@ -265,7 +275,21 @@ public class FhirUtil {
 		if (pa.getPreferred())
 			address.setUse(AddressUse.HOME);
 	}
-
+	
+	/** 
+	 * Rebuild the session data
+	 */
+	private String rebuildExtendedDataClassifier(String[] extensionData) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 1; i < extensionData.length; i++) {
+			sb.append(extensionData[i]);
+			if(i != extensionData.length - 1) {
+				sb.append(":");
+			}
+		}
+		return sb.toString();
+	}
+	
 	/**
 	 * @summary Constructs a FHIR patient model from the specified OpenMRS patient
 	 * @param patient     The patient to be constructed
@@ -283,6 +307,16 @@ public class FhirUtil {
 		// Patient
 		org.hl7.fhir.r4.model.Patient retVal = new org.hl7.fhir.r4.model.Patient();
 
+		retVal.setMeta(new Meta());
+		retVal.getMeta().setLastUpdated(patient.getDateChanged());
+		if(patient.getUuid() != null && 
+				patient.getUuid() != "") {
+			retVal.setIdElement(new IdType(patient.getUuid()));
+		}
+		else {
+			retVal.setIdElement(new IdType(patient.getId().toString()));
+		}
+		
 		// Configuration states not to append local patient identity domain
 		if ("-".equals(this.m_configuration.getLocalPatientIdRoot())) {
 
@@ -352,6 +386,50 @@ public class FhirUtil {
 				retVal.setDeceased(new DateType(patient.getDeathDate()));
 		}
 
+		// Extended Attributes
+		if(this.m_configuration.getExtensionMap() != null) {
+			for(PersonAttribute pat : patient.getActiveAttributes()) {
+			
+				String extensionMap = this.m_configuration.getExtensionMap().get(pat.getAttributeType().getName());
+				if (extensionMap == null) {
+					continue;
+				}
+				
+				// Determine where to place the extension value 
+				String[] extensionData = extensionMap.split("\\?");
+				String extensionTarget = extensionData[0];
+				String extensionClassifier = null;
+				if(extensionData.length > 1) {
+					extensionClassifier = this.rebuildExtendedDataClassifier(extensionData);
+				}
+				
+				switch(extensionTarget) {
+					case "telecom":
+						ContactPoint tel = new ContactPoint();
+						tel.setValue(pat.getValue());
+						tel.setUse(ContactPointUse.fromCode(extensionClassifier));
+						String system = pat.getValue().contains("@") ? "email" : "phone";
+						tel.setSystem(ContactPoint.ContactPointSystem.fromCode(system));
+						retVal.addTelecom(tel);
+						break;
+					case "identifier":
+						Identifier id = new Identifier();
+						id.setValue(pat.getValue());
+						id.setSystem(extensionClassifier);
+						retVal.addIdentifier(id);
+						break;
+					case "extension":
+						Extension ext = new Extension();
+						ext.setUrl(extensionClassifier);
+						ext.setValue(new StringType(pat.getValue()));
+						retVal.addExtension(ext);
+						break;
+					default:
+						this.log.warn(String.format("Don't yet support extended field mapping of %s", extensionData[0]));
+				}
+				
+			}
+		}
 		return retVal;
 	}
 
@@ -363,6 +441,23 @@ public class FhirUtil {
 	public MpiPatient parseFhirPatient(org.hl7.fhir.r4.model.Patient fhirPatient)
 	{
 		MpiPatient patient = new MpiPatient();
+		
+		try {
+			// Attempt to resolve via UUID
+			if(fhirPatient.getId() != null) {
+				UUID patientUuid = UUID.fromString(fhirPatient.getId());
+				PatientService patientService = Context.getService(PatientService.class);
+				Patient matchedPatient = patientService.getPatientByUuid(patientUuid.toString());
+				if(matchedPatient != null) {
+					patient.setId(matchedPatient.getId());
+				}
+				patient.setUuid(patientUuid.toString());
+			}
+		}
+		catch(Exception e) {
+			log.warn("Attempt to cross reference via UUID failed");
+		}
+		
 		// Attempt to load a patient by identifier
 		for (Identifier id : fhirPatient.getIdentifier()) {
 			// ID is a local identifier
@@ -387,7 +482,7 @@ public class FhirUtil {
 				identifierTypes.add(patientIdentifier.getIdentifierType());
 				List<PatientIdentifier> matchPatientIds = Context.getPatientService().getPatientIdentifiers(patientIdentifier.getIdentifier(), identifierTypes, null, null, null);
 
-				if (matchPatientIds != null && matchPatientIds.size() > 0)
+				if (matchPatientIds != null && matchPatientIds.size() > 0 && patient.getId() == null)
 					patient.setId(matchPatientIds.get(0).getPatient().getId());
 				patient.addIdentifier(patientIdentifier);
 			} else {
@@ -450,6 +545,58 @@ public class FhirUtil {
 			patient.addAddress(pa);
 		}
 
+		// Extended Attributes
+		if(this.m_configuration.getExtensionMap() != null) {
+			HashMap<String, String> extensions = this.m_configuration.getExtensionMap();
+			for(String attType : extensions.keySet()) {
+				String mapping = extensions.get(attType);
+				PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(attType);
+				if (pat == null) {
+					this.log.warn(String.format("Could not find extension type %s", attType));
+					continue;
+				}
+				
+				String[] extensionData = mapping.split("\\?");
+				String extensionTarget = extensionData[0];
+				String extensionClassifier = null;
+				if(extensionData.length > 1) {
+					extensionClassifier = this.rebuildExtendedDataClassifier(extensionData);
+				}
+				
+				switch(extensionTarget) {
+					case "telecom":
+						ContactPointUse classUse = ContactPoint.ContactPointUse.fromCode(extensionClassifier);
+						for(ContactPoint tel : fhirPatient.getTelecom()) {
+							if(tel.getUse().equals(classUse)) {
+								patient.addAttribute(new PersonAttribute(pat, tel.getValue()));
+								break;
+							}
+						}
+					break;
+				case "identifier":
+					for(Identifier id : fhirPatient.getIdentifier()) {
+						if(id.getSystem().equals(extensionClassifier)) {
+							patient.addAttribute(new PersonAttribute(pat, id.getValue()));
+							break;
+						}
+					}
+					break;
+				case "extension":
+					for(Extension ext : fhirPatient.getExtension()) {
+						if(ext.getUrl().equals(extensionClassifier)) {
+							if(ext.getValue() instanceof StringType) {
+								patient.addAttribute(new PersonAttribute(pat, ((StringType)ext.getValue()).getValue()));
+								break;
+							}
+						}
+					}
+					break;
+					
+				}
+				
+			}
+			
+		}
 		return patient;
 	}
 }

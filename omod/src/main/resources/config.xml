@@ -236,7 +236,15 @@
 		<defaultValue></defaultValue>
 		<description>The proxy to use for HTTP traffic</description>
 	</globalProperty>
-		<!--
+	<globalProperty>
+		<property>mpi-client.msg.deviceId</property>
+		<description>The identification of the device on which this OpenMRS instance is running</description>
+	</globalProperty>
+	<globalProperty>
+		<property>mpi-client.msg.deviceToken</property>
+		<description>The authentication token of the device on which this OpenMRS instance is running</description>
+	</globalProperty>
+			<!--
 	<dwr>
 		<allow>
 			<create creator="new" javascript="DWRFormEntryService">
@@ -270,14 +278,7 @@
 		<lang>en</lang>
 		<file>messages.properties</file>
 	</messages>
-	<messages>
-		<lang>fr</lang>
-		<file>messages_fr.properties</file>
-	</messages>
-	<messages>
-		<lang>es</lang>
-		<file>messages_es.properties</file>
-	</messages>
+	
 	<!-- /Internationalization -->
 	
 </module>
