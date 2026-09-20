@@ -311,10 +311,10 @@ public class FhirUtil {
 		retVal.getMeta().setLastUpdated(patient.getDateChanged());
 		if(patient.getUuid() != null && 
 				patient.getUuid() != "") {
-			retVal.setIdElement(new IdType(patient.getUuid()));
+			retVal.setId(patient.getUuid());
 		}
 		else {
-			retVal.setIdElement(new IdType(patient.getId().toString()));
+			retVal.setId(patient.getId().toString());
 		}
 		
 		// Configuration states not to append local patient identity domain
@@ -386,9 +386,10 @@ public class FhirUtil {
 		// Extended Attributes
 		if(this.m_configuration.getExtensionMap() != null) {
 			for(PersonAttribute pat : patient.getActiveAttributes()) {
-			
+				
 				String extensionMap = this.m_configuration.getExtensionMap().get(pat.getAttributeType().getName());
 				if (extensionMap == null) {
+					this.log.warn(String.format("Extension %s has no mapping and will not be included", pat.getAttributeType().getName()));
 					continue;
 				}
 				

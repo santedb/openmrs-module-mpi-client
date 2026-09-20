@@ -90,8 +90,8 @@ public class PmirMpiClientServiceImpl extends FhirMpiClientServiceImpl {
 			patientEntry.addLink(new BundleLinkComponent(new StringType("about"), new UrlType(this.getFullUrl(focalPatient))));
 			patientEntry.setFullUrl(this.getFullUrl(focalPatient));
 			patientEntry.setRequest(new BundleEntryRequestComponent());
-			patientEntry.getRequest().setMethod(HTTPVerb.POST);
-			patientEntry.getRequest().setUrl(this.getFullUrl(focalPatient));
+			patientEntry.getRequest().setMethod(verb);
+			patientEntry.getRequest().setUrl(this.getFullUrl(focalPatient).replace("urn:uuid:", "Patient/"));
 			focalBundle.addEntry(patientEntry);
 			return retVal;
 		}
@@ -111,7 +111,7 @@ public class PmirMpiClientServiceImpl extends FhirMpiClientServiceImpl {
 		
 		try {
 			
-			Bundle admitMessage = this.createPmirBundle(HTTPVerb.POST, patient);
+			Bundle admitMessage = this.createPmirBundle(HTTPVerb.PUT, patient);
 			
 			IGenericClient client = this.getClient(false);
 			MethodOutcome result = client.create().resource(admitMessage).execute();

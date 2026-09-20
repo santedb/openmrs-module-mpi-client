@@ -410,7 +410,7 @@ public class MpiClientConfiguration {
     		for(String kv : propertyData.split(","))
     		{
     			String[] key = kv.split(":=");
-    			retVal.put(key[0], key[1]);
+    			retVal.put(key[0].trim(), key[1].trim());
     		}
     	}
     	return retVal;

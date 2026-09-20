@@ -474,7 +474,7 @@ public class FhirMpiClientServiceImpl implements MpiClientWorker {
 		try {
 			admitMessage = this.m_messageUtil.createFhirPatient(patient, false);
 			IGenericClient client = this.getClient(false);
-			MethodOutcome result = client.create().resource(admitMessage).execute();
+			MethodOutcome result = client.update().resource(admitMessage).execute();
 			if (!result.getCreated())
 				throw new MpiClientException(
 						String.format("Error from MPI :> %s", result.getResource().getClass().getName()));
