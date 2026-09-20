@@ -321,16 +321,13 @@ public class FhirUtil {
 		if ("-".equals(this.m_configuration.getLocalPatientIdRoot())) {
 
 			// Preferred domain
-			String domain = this.m_configuration.getPreferredCorrelationDomain();
-			if (domain == null || domain.isEmpty())
-				throw new HL7Exception(
-						"Cannot determine update correlation id, please set a preferred correlation identity domain");
-			else {
-				for (PatientIdentifier patIdentifier : patient.getIdentifiers()) {
-					String thisDomain = exportIdentifiers.get(patIdentifier.getIdentifierType().getName());
-					if (domain.equals(thisDomain)) {
-						this.updateFhirId(retVal.addIdentifier(), patIdentifier.getIdentifier(), domain);
-					}
+			for (PatientIdentifier patIdentifier : patient.getIdentifiers()) {
+				String thisDomain = exportIdentifiers.get(patIdentifier.getIdentifierType().getName());
+				if (null != thisDomain) {
+					this.updateFhirId(retVal.addIdentifier(), patIdentifier.getIdentifier(), thisDomain);
+				}
+				else {
+					this.log.info(String.format("%s is not mapped to an export identifier", patIdentifier.getIdentifierType().getName()));
 				}
 			}
 		} else {
@@ -445,7 +442,9 @@ public class FhirUtil {
 		try {
 			// Attempt to resolve via UUID
 			if(fhirPatient.getId() != null) {
-				UUID patientUuid = UUID.fromString(fhirPatient.getId());
+				String localId = fhirPatient.getIdElement().toUnqualifiedVersionless().getIdPart();
+				this.log.info(String.format("Attempting to xref via ID: %s", localId));
+				UUID patientUuid = UUID.fromString(localId);
 				PatientService patientService = Context.getService(PatientService.class);
 				Patient matchedPatient = patientService.getPatientByUuid(patientUuid.toString());
 				if(matchedPatient != null) {
@@ -455,11 +454,13 @@ public class FhirUtil {
 			}
 		}
 		catch(Exception e) {
-			log.warn("Attempt to cross reference via UUID failed");
+			log.warn("Attempt to cross reference via UUID failed", e);
 		}
 		
 		// Attempt to load a patient by identifier
 		for (Identifier id : fhirPatient.getIdentifier()) {
+			
+			this.log.info(String.format("Parsing FHIR ID %s@%s", id.getValue(), id.getSystem()));
 			// ID is a local identifier
 			if (this.m_configuration.getLocalPatientIdRoot().equals(id.getSystem())) {
 				if (StringUtils.isNumeric(id.getValue()))
@@ -493,7 +494,7 @@ public class FhirUtil {
 		}
 
 		// Enterprise root? 
-		if(null != this.m_configuration.getEnterprisePatientIdRoot() && !this.m_configuration.getEnterprisePatientIdRoot().isEmpty())
+		/** if(null != this.m_configuration.getEnterprisePatientIdRoot() && !this.m_configuration.getEnterprisePatientIdRoot().isEmpty())
 		{
 			Identifier fhirSysId = new Identifier();
 			fhirSysId.setSystem(this.m_configuration.getEnterprisePatientIdRoot());
@@ -503,7 +504,7 @@ public class FhirUtil {
 			if(sysId != null) {
 				patient.addIdentifier(sysId);
 			}
-		}
+		} */
 		
 		// Attempt to copy names
 		for (HumanName name : fhirPatient.getName()) {

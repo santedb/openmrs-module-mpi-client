@@ -295,9 +295,10 @@ public class FhirMpiClientServiceImpl implements MpiClientWorker {
 
 			List<MpiPatient> retVal = new ArrayList<MpiPatient>();
 			for (BundleEntryComponent result : results.getEntry()) {
-
-				org.hl7.fhir.r4.model.Patient pat = (org.hl7.fhir.r4.model.Patient) result.getResource();
-				return this.m_messageUtil.parseFhirPatient(pat);
+				if(result.getResource() instanceof org.hl7.fhir.r4.model.Patient) {
+					org.hl7.fhir.r4.model.Patient pat = (org.hl7.fhir.r4.model.Patient) result.getResource();
+					return this.m_messageUtil.parseFhirPatient(pat);
+				}
 			}
 			return null; // no results
 		} catch (Exception e) {

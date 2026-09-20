@@ -158,19 +158,26 @@ public class MpiClientServiceImpl extends BaseOpenmrsService
 	@Override
 	public Patient matchWithExistingPatient(Patient remotePatient) {
 		Patient candidate = null;
+		
+		if(remotePatient.getUuid() != null) {
+			candidate = Context.getPatientService().getPatientByUuid(remotePatient.getUuid());
+		}
+		
 		// Does this patient have an identifier from our assigning authority?
-		for(PatientIdentifier pid : remotePatient.getIdentifiers()) {
-			if(pid.getIdentifierType() == null) continue;
-			String domain = this.m_configuration.getLocalPatientIdentifierTypeMap().get(pid.getIdentifierType().getName());
-			if(this.m_configuration.getLocalPatientIdRoot().equals(domain))
-				try
-				{
-					candidate = Context.getPatientService().getPatient(Integer.parseInt(pid.getIdentifier()));
-				}
-				catch(Exception e)
-				{
-					
-				}
+		if(candidate == null) {
+			for(PatientIdentifier pid : remotePatient.getIdentifiers()) {
+				if(pid.getIdentifierType() == null) continue;
+				String domain = this.m_configuration.getLocalPatientIdentifierTypeMap().get(pid.getIdentifierType().getName());
+				if(this.m_configuration.getLocalPatientIdRoot().equals(domain))
+					try
+					{
+						candidate = Context.getPatientService().getPatient(Integer.parseInt(pid.getIdentifier()));
+					}
+					catch(Exception e)
+					{
+						
+					}
+			}
 		}
 		// This patient may be an existing patient, so we just don't want to add it!
 		if(candidate == null)
