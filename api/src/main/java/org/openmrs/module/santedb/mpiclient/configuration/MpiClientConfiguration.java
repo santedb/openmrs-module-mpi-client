@@ -120,7 +120,7 @@ public class MpiClientConfiguration {
 			}
 			else
 			{
-				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(propertyName, defaultValue.toString()));
+				Context.getAdministrationService().saveGlobalProperty(new GlobalProperty(propertyName, null != defaultValue ? defaultValue.toString() : ""));
 				synchronized (s_lockObject) {
 					this.m_cachedProperties.put(propertyName, defaultValue);
                 }
