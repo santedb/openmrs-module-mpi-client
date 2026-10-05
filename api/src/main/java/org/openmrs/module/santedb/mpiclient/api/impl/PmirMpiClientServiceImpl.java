@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.Enumeration;
 import org.hl7.fhir.r4.model.MessageHeader;
 import org.hl7.fhir.r4.model.MessageHeader.MessageDestinationComponent;
 import org.hl7.fhir.r4.model.MessageHeader.MessageSourceComponent;
+import org.hl7.fhir.r4.model.Meta;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.StringType;
@@ -48,6 +49,20 @@ public class PmirMpiClientServiceImpl extends FhirMpiClientServiceImpl {
 	private String getFullUrl(Resource fhirResource) {
 		return String.format("urn:uuid:%s", fhirResource.getId());
 	}
+
+	/** 
+	 * Get the relative URL
+	 */
+	private String getUrl(Resource fhirResource) {
+		return String.format("%s/%s", fhirResource.getResourceType().name(), fhirResource.getId());
+	}
+	
+
+	private Meta createPmirMeta(String resourceType) {
+		Meta retVal = new Meta();
+		retVal.addProfile("https://profiles.ihe.net/ITI/PMIR/StructureDefinition/IHE.PMIR." + resourceType);
+		return retVal;
+	}
 	
 	/** 
 	 * Create the PMIR bundle
@@ -59,15 +74,17 @@ public class PmirMpiClientServiceImpl extends FhirMpiClientServiceImpl {
 		try {
 			Bundle retVal = new Bundle();
 			
+			retVal.setMeta (this.createPmirMeta("Bundle"));
 			Bundle focalBundle = new Bundle();
 			focalBundle.setId(UUID.randomUUID().toString());
 			focalBundle.setType(BundleType.HISTORY);
-			
+			focalBundle.setMeta(this.createPmirMeta("Bundle.History"));
 			// Construct the standard PMIR header
 			retVal.setType(BundleType.MESSAGE);
 			BundleEntryComponent messageHeaderEntry = new BundleEntryComponent();
 			MessageHeader messageHeader = new MessageHeader();
 			messageHeader.setId(UUID.randomUUID().toString());
+			messageHeader.setMeta(this.createPmirMeta("MessageHeader"));
 			messageHeaderEntry.setFullUrl(this.getFullUrl(messageHeader));
 			messageHeader.setEvent(new UriType("urn:ihe:iti:pmir:2019:patient-feed"));
 			messageHeader.setSource(new MessageSourceComponent(new UrlType(String.format("urn:santedb:openmrs:mpi-client:%s", this.m_configuration.getLocalApplication()))));
@@ -87,7 +104,7 @@ public class PmirMpiClientServiceImpl extends FhirMpiClientServiceImpl {
 			BundleEntryComponent patientEntry = new BundleEntryComponent();
 			org.hl7.fhir.r4.model.Patient focalPatient = this.m_messageUtil.createFhirPatient(patient, false);
 			patientEntry.setResource(focalPatient);
-			patientEntry.addLink(new BundleLinkComponent(new StringType("about"), new UrlType(this.getFullUrl(focalPatient))));
+			focalBundle.addLink(new BundleLinkComponent(new StringType("about"), new UrlType(this.getFullUrl(focalPatient))));
 			patientEntry.setFullUrl(this.getFullUrl(focalPatient));
 			patientEntry.setRequest(new BundleEntryRequestComponent());
 			patientEntry.getRequest().setMethod(verb);
