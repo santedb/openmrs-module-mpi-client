@@ -383,6 +383,11 @@ public class FhirUtil {
 				retVal.setDeceased(new DateType(patient.getDeathDate()));
 		}
 
+		if(this.m_configuration.getPrivacyTag() != null) {
+			if(retVal.getMeta() == null) retVal.setMeta(new Meta());
+			retVal.getMeta().addSecurity("http://terminology.hl7.org/CodeSystem/v3-ActCode", this.m_configuration.getPrivacyTag(), null);
+		}
+		
 		// Extended Attributes
 		if(this.m_configuration.getExtensionMap() != null) {
 			for(PersonAttribute pat : patient.getActiveAttributes()) {

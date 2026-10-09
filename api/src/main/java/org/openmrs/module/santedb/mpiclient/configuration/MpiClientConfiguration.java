@@ -91,6 +91,7 @@ public class MpiClientConfiguration {
 	public static final String PROP_HTTP_PROXY = "mpi-client.http.proxyAddress";
 	public static final String PROP_AUTH_TYPE = "mpi-client.security.authType";
 	public static final String PROP_HL7_TLS = "mpi-client.security.tls";
+	public static final String PROP_PRIVACY_TAG = "mpi-client.privacy.tag";
 	
     private Map<String, Object> m_cachedProperties = new HashMap<String, Object>();
 
@@ -150,6 +151,14 @@ public class MpiClientConfiguration {
 					s_instance = new MpiClientConfiguration();
 			}
 		return s_instance;
+	}
+	
+	/**
+	 * Get the privacy tag
+	 * @return
+	 */
+	public String getPrivacyTag() {
+		return this.getOrCreateGlobalProperty(PROP_PRIVACY_TAG, null);
 	}
 	
 	/** 

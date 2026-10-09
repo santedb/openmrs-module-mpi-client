@@ -244,6 +244,10 @@
 		<property>mpi-client.msg.deviceToken</property>
 		<description>The authentication token of the device on which this OpenMRS instance is running</description>
 	</globalProperty>
+	<globalProperty>
+		<property>mpi-client.privacy.tag</property>
+		<description>The privacy tag to add to all patients being sent to the MPI from this OpenMRS instance</description>
+	</globalProperty>
 			<!--
 	<dwr>
 		<allow>
