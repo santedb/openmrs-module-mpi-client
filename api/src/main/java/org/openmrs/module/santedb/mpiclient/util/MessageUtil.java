@@ -80,6 +80,7 @@ import ca.uhn.hl7v2.model.v25.segment.MSH;
 import ca.uhn.hl7v2.model.v25.segment.NK1;
 import ca.uhn.hl7v2.model.v25.segment.PID;
 import ca.uhn.hl7v2.model.v25.segment.SFT;
+import ca.uhn.hl7v2.model.v25.segment.OM1;
 import ca.uhn.hl7v2.parser.PipeParser;
 import ca.uhn.hl7v2.util.Terser;
 
@@ -200,7 +201,7 @@ public final class MessageUtil {
 		message.getPV1().getPatientClass().setValue("I");
 		// Move patient data to PID
 		this.updatePID(message.getPID(), patient, false);
-
+		
 		for (Relationship rel : Context.getPersonService().getRelationshipsByPerson(patient)) {
 			this.updateNK1(message.getNK1(message.getNK1Reps()), rel, false);
 		}
