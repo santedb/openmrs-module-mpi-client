@@ -148,7 +148,8 @@ public class FhirMpiClientServiceImpl implements MpiClientWorker {
 													.format("%s|%s:%s", this.m_configuration.getLocalApplication(),
 															this.m_configuration.getLocalFacility(), deviceSecret)
 													.getBytes())));
-				} else if (this.m_configuration.getDeviceId() != null) {
+				} else if (this.m_configuration.getDeviceId() != null && 
+						!this.m_configuration.getDeviceId().isEmpty()) {
 					post.addHeader(
 							"Authorization", String
 									.format("basic %s",

@@ -158,7 +158,7 @@ public class MpiClientConfiguration {
 	 * @return
 	 */
 	public String getPrivacyTag() {
-		return this.getOrCreateGlobalProperty(PROP_PRIVACY_TAG, null);
+		return this.getOrCreateGlobalProperty(PROP_PRIVACY_TAG, "");
 	}
 	
 	/** 
@@ -166,7 +166,7 @@ public class MpiClientConfiguration {
 	 * @return
 	 */
 	public String getDeviceId() {
-		return this.getOrCreateGlobalProperty(PROP_NAME_SND_DEV, null);		
+		return this.getOrCreateGlobalProperty(PROP_NAME_SND_DEV, "");		
 	}
 	
 	/** 
@@ -174,7 +174,7 @@ public class MpiClientConfiguration {
 	 * @return
 	 */
 	public String getDeviceSecret() {
-		return this.getOrCreateGlobalProperty(PROP_NAME_DEVICE_TOKEN, null);
+		return this.getOrCreateGlobalProperty(PROP_NAME_DEVICE_TOKEN, "");
 	}
 	
 	/**
