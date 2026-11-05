@@ -575,7 +575,7 @@ public class FhirUtil {
 					case "telecom":
 						ContactPointUse classUse = ContactPoint.ContactPointUse.fromCode(extensionClassifier);
 						for(ContactPoint tel : fhirPatient.getTelecom()) {
-							if(tel.getUse().equals(classUse)) {
+							if(tel.getUse() == null || tel.getUse().equals(classUse)) {
 								patient.addAttribute(new PersonAttribute(pat, tel.getValue()));
 								break;
 							}
